@@ -117,3 +117,9 @@ let rec recv t =
     | exception (Eio.Io (Eio.Net.E Connection_reset _, _) as ex) ->
       Log.info (fun f -> f "%a" Eio.Exn.pp ex);
       Error `Closed
+
+let disconnect t =
+  try
+    Eio.Flow.shutdown t.flow `All
+  with | Eio.Io (Eio.Net.E Connection_reset _, _) as ex ->
+    Log.info (fun f -> f "%a" Eio.Exn.pp ex);
