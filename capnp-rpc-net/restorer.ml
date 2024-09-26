@@ -47,6 +47,9 @@ let fn (r:t) =
   fun k object_id ->
   match r object_id with
   | r -> k r
+  | exception (Eio.Cancel.Cancelled _ as ex) ->
+    k (reject Capnp_rpc.Exception.cancelled);
+    raise ex
   | exception ex ->
     Log.err (fun f -> f "Uncaught exception restoring object: %a" Fmt.exn ex);
     k (reject (Capnp_rpc.Exception.v "Internal error restoring object"))

@@ -710,7 +710,8 @@ let test_late_bootstrap ~net =
       let make_sturdy () _id = assert false
       let load () _sr _name =
         Promise.resolve set_connected ();
-        Promise.await service
+        Promise.await service;
+        Capnp_rpc_net.Restorer.grant @@ Echo.local ()
     end in
     let table = Capnp_rpc_net.Restorer.Table.of_loader ~sw:server_sw (module Loader) () in
     let restore = Restorer.of_table table in
@@ -719,7 +720,7 @@ let test_late_bootstrap ~net =
     Promise.await connected;
     Eio.Cancel.protect @@ fun () ->
     Switch.fail client_switch Simulated_failure;
-    Promise.resolve set_service @@ Capnp_rpc_net.Restorer.grant @@ Echo.local ();
+    Promise.resolve set_service ();
     let service = Capability.await_settled service |> Result.get_error in
     Logs.info (fun f -> f "client got: %a" Capnp_rpc.Exception.pp service);
     assert (service.Capnp_rpc.Exception.ty = `Disconnected);
